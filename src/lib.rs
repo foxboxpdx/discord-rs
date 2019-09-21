@@ -1243,11 +1243,11 @@ trait SenderExt {
 	fn send_json(&mut self, value: &serde_json::Value) -> Result<()>;
 }
 
-impl ReceiverExt for websocket::client::Receiver<websocket::stream::WebSocketStream> {
+impl ReceiverExt for websocket::client::sync::Reader<Box <dyn websocket::stream::sync::Stream>> {
 	fn recv_json<F, T>(&mut self, decode: F) -> Result<T> where F: FnOnce(serde_json::Value) -> Result<T> {
 		use websocket::message::{Message, Type};
 		use websocket::ws::receiver::Receiver;
-		let message: Message = try!(self.recv_message());
+		let message: Message = Message::from(try!(self.recv_message()));
 		if message.opcode == Type::Close {
 			Err(Error::Closed(message.cd_status_code, String::from_utf8_lossy(&message.payload).into_owned()))
 		} else if message.opcode == Type::Binary || message.opcode == Type::Text {
@@ -1270,7 +1270,7 @@ impl ReceiverExt for websocket::client::Receiver<websocket::stream::WebSocketStr
 	}
 }
 
-impl SenderExt for websocket::client::Sender<websocket::stream::WebSocketStream> {
+impl SenderExt for websocket::client::sync::Writer<Box<dyn websocket::stream::sync::Stream>> {
 	fn send_json(&mut self, value: &serde_json::Value) -> Result<()> {
 		use websocket::message::Message;
 		use websocket::ws::sender::Sender;
@@ -1286,6 +1286,6 @@ mod internal {
 		SendMessage(::serde_json::Value),
 		Sequence(u64),
 		ChangeInterval(u64),
-		ChangeSender(::websocket::client::Sender<::websocket::stream::WebSocketStream>),
+		ChangeSender(::websocket::client::sync::Writer<Box<dyn (::websocket::stream::sync::Stream)>>),
 	}
 }

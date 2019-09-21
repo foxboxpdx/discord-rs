@@ -1,6 +1,6 @@
 //! Struct and enum definitions of values in the Discord model.
 #![allow(missing_docs)]
-
+#![feature(associated_consts)]
 use std::fmt;
 use std::str::FromStr;
 use std::borrow::Cow;
@@ -574,51 +574,51 @@ pub mod permissions {
 
 	bitflags! {
 		/// Set of permissions assignable to a Role or PermissionOverwrite
-		pub flags Permissions: u64 {
-			const CREATE_INVITE = 1,
-			const KICK_MEMBERS = 1 << 1,
-			const BAN_MEMBERS = 1 << 2,
-			/// Grant all permissions, bypassing channel-specific permissions
-			const ADMINISTRATOR = 1 << 3,
+		pub struct Permissions: u64 {
+			const CREATE_INVITE = 1;
+			const KICK_MEMBERS = 1 << 1;
+			const BAN_MEMBERS = 1 << 2;
+			/// Grant all permissions; bypassing channel-specific permissions
+			const ADMINISTRATOR = 1 << 3;
 			/// Modify roles below their own
-			const MANAGE_ROLES = 1 << 28,
+			const MANAGE_ROLES = 1 << 28;
 			/// Create channels or edit existing ones
-			const MANAGE_CHANNELS = 1 << 4,
+			const MANAGE_CHANNELS = 1 << 4;
 			/// Change the server's name or move regions
-			const MANAGE_SERVER = 1 << 5,
+			const MANAGE_SERVER = 1 << 5;
 			/// Change their own nickname
-			const CHANGE_NICKNAMES = 1 << 26,
+			const CHANGE_NICKNAMES = 1 << 26;
 			/// Change the nickname of other users
-			const MANAGE_NICKNAMES = 1 << 27,
+			const MANAGE_NICKNAMES = 1 << 27;
 			/// Manage the emojis in a a server.
-			const MANAGE_EMOJIS = 1 << 30,
+			const MANAGE_EMOJIS = 1 << 30;
 			/// Manage channel webhooks
-			const MANAGE_WEBHOOKS = 1 << 29,
+			const MANAGE_WEBHOOKS = 1 << 29;
 
-			const READ_MESSAGES = 1 << 10,
-			const SEND_MESSAGES = 1 << 11,
+			const READ_MESSAGES = 1 << 10;
+			const SEND_MESSAGES = 1 << 11;
 			/// Send text-to-speech messages to those focused on the channel
-			const SEND_TTS_MESSAGES = 1 << 12,
+			const SEND_TTS_MESSAGES = 1 << 12;
 			/// Delete messages by other users
-			const MANAGE_MESSAGES = 1 << 13,
-			const EMBED_LINKS = 1 << 14,
-			const ATTACH_FILES = 1 << 15,
-			const READ_HISTORY = 1 << 16,
+			const MANAGE_MESSAGES = 1 << 13;
+			const EMBED_LINKS = 1 << 14;
+			const ATTACH_FILES = 1 << 15;
+			const READ_HISTORY = 1 << 16;
 			/// Trigger a push notification for an entire channel with "@everyone"
-			const MENTION_EVERYONE = 1 << 17,
+			const MENTION_EVERYONE = 1 << 17;
 			/// Use emojis from other servers
-			const EXTERNAL_EMOJIS = 1 << 18,
+			const EXTERNAL_EMOJIS = 1 << 18;
 			/// Add emoji reactions to messages
-			const ADD_REACTIONS = 1 << 6,
+			const ADD_REACTIONS = 1 << 6;
 
-			const VOICE_CONNECT = 1 << 20,
-			const VOICE_SPEAK = 1 << 21,
-			const VOICE_MUTE_MEMBERS = 1 << 22,
-			const VOICE_DEAFEN_MEMBERS = 1 << 23,
+			const VOICE_CONNECT = 1 << 20;
+			const VOICE_SPEAK = 1 << 21;
+			const VOICE_MUTE_MEMBERS = 1 << 22;
+			const VOICE_DEAFEN_MEMBERS = 1 << 23;
 			/// Move users out of this channel into another
-			const VOICE_MOVE_MEMBERS = 1 << 24,
+			const VOICE_MOVE_MEMBERS = 1 << 24;
 			/// When denied, members must use push-to-talk
-			const VOICE_USE_VAD = 1 << 25,
+			const VOICE_USE_VAD = 1 << 25;
 		}
 	}
 
@@ -1132,7 +1132,7 @@ impl LiveServer {
 			}
 		}
 		// Administrators have all permissions in any channel
-		if permissions.contains(ADMINISTRATOR) {
+		if permissions.contains(Permissions::ADMINISTRATOR) {
 			return Permissions::all();
 		}
 		let mut text_channel = false;
@@ -1158,21 +1158,21 @@ impl LiveServer {
 		}
 		// Default channel is always readable
 		if channel.0 == self.id.0 {
-			permissions |= READ_MESSAGES;
+			permissions |= Permissions::READ_MESSAGES;
 		}
 		// No SEND_MESSAGES => no message-sending-related actions
-		if !permissions.contains(SEND_MESSAGES) {
-			permissions &= !(SEND_TTS_MESSAGES | MENTION_EVERYONE | EMBED_LINKS | ATTACH_FILES);
+		if !permissions.contains(Permissions::SEND_MESSAGES) {
+			permissions &= !(Permissions::SEND_TTS_MESSAGES | Permissions::MENTION_EVERYONE | Permissions::EMBED_LINKS | Permissions::ATTACH_FILES);
 		}
 		// No READ_MESSAGES => no channel actions
-		if !permissions.contains(READ_MESSAGES) {
-			permissions &= KICK_MEMBERS | BAN_MEMBERS | ADMINISTRATOR |
-				MANAGE_SERVER | CHANGE_NICKNAMES | MANAGE_NICKNAMES;
+		if !permissions.contains(Permissions::READ_MESSAGES) {
+			permissions &= Permissions::KICK_MEMBERS | Permissions::BAN_MEMBERS | Permissions::ADMINISTRATOR |
+				Permissions::MANAGE_SERVER | Permissions::CHANGE_NICKNAMES | Permissions::MANAGE_NICKNAMES;
 		}
 		// Text channel => no voice actions
 		if text_channel {
-			permissions &= !(VOICE_CONNECT | VOICE_SPEAK | VOICE_MUTE_MEMBERS |
-				VOICE_DEAFEN_MEMBERS | VOICE_MOVE_MEMBERS | VOICE_USE_VAD);
+			permissions &= !(Permissions::VOICE_CONNECT | Permissions::VOICE_SPEAK | Permissions::VOICE_MUTE_MEMBERS |
+				Permissions::VOICE_DEAFEN_MEMBERS | Permissions::VOICE_MOVE_MEMBERS | Permissions::VOICE_USE_VAD);
 		}
 		permissions
 	}
